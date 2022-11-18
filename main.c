@@ -7,11 +7,11 @@
 *   - 2. A mérkőzések időpontjait és végkimenetelét tartalmazza.
 *   - 3. Az átigazolásokat tartalmazza. ( Ki mikor honnan hova igazolt )
 */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_LINE_LENGTH 128
 struct team {
     char* name;
     char* players;
@@ -33,23 +33,31 @@ const char filePaths[3][50] = {
 *   Read all three files and create a linked list for each.
 */
 void readFiles(void){
-    FILE* ptr;
-    char ch;
+    FILE* file_ptr;
+    char    *content;
+    long    numbytes;
     for (size_t i = 0; i < 3; i++){
         char* path;
         strcpy(path,filePaths[i]);
-        ptr = fopen(path, "r");
-        if (NULL == ptr) {
+        file_ptr = fopen(path, "r");
+        if (NULL == file_ptr) {
             printf("%s can't be opened \n",path);
             continue;
         }
         // Print file content for now
-        do {
-            ch = fgetc(ptr);
-            printf("%c", ch);
-        } while (ch != EOF);
-        // close the file.
-        fclose(ptr);
+        fseek(file_ptr, 0L, SEEK_END);
+        numbytes = ftell(file_ptr);
+        fseek(file_ptr, 0L, SEEK_SET);
+        content = (char*)calloc(numbytes, sizeof(char));   
+        
+        if(content == NULL){
+            printf("Failed to allocate enough space for the file content on path: %s \n",path);
+            return;
+        }
+    
+        fread(content, sizeof(char), numbytes, file_ptr);
+        fclose(file_ptr);
+        printf("\n****\n%s content: \n%s\n****\n",path,content);
     }
 }
 
@@ -65,7 +73,7 @@ void searchMatch(char* nameOne,char* nameTwo){
 */
 void waitForNames(void){
     printf("Please enter two names separated by a \";\" character.\n");
-    char inputNames[2][128];
+    char inputNames[2][MAX_LINE_LENGTH];
     char* namesBuff_ptr = NULL;
     int bufferIndex = 0;
     size_t len = 0;
@@ -73,7 +81,10 @@ void waitForNames(void){
 
     // Get the whole line from stdin
     lineSize = getline(&namesBuff_ptr, &len, stdin);
-
+    if( lineSize > MAX_LINE_LENGTH ){
+        printf("Line is bigger than the allocated buffer. Aborting.\n");
+        return;
+    }
     // Remove new line character from the buffer.
     if (namesBuff_ptr[lineSize - 1] == '\n'){
         namesBuff_ptr[lineSize - 1] = '\0';
