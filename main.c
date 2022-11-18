@@ -22,12 +22,36 @@ struct matches{
     char* against;
 };
 
-const char* filePaths[3][20] = {
-    "/firstFile.txt",
-    "/secondFile.txt",
-    "/thirdFile.txt"
+const char filePaths[3][50] = {
+    "./files/firstFile.txt",
+    "./files/secondFile.txt",
+    "./files/thirdFile.txt"
 };
 
+
+/*
+*   Read all three files and create a linked list for each.
+*/
+void readFiles(void){
+    FILE* ptr;
+    char ch;
+    for (size_t i = 0; i < 3; i++){
+        char* path;
+        strcpy(path,filePaths[i]);
+        ptr = fopen(path, "r");
+        if (NULL == ptr) {
+            printf("%s can't be opened \n",path);
+            continue;
+        }
+        // Print file content for now
+        do {
+            ch = fgetc(ptr);
+            printf("%c", ch);
+        } while (ch != EOF);
+        // close the file.
+        fclose(ptr);
+    }
+}
 
 /*
 *   Searching if the two names has played against each other or not.
@@ -78,6 +102,7 @@ void waitForNames(void){
 }
 
 int main(void){
+    readFiles();
     while(1){
         waitForNames();
     }
